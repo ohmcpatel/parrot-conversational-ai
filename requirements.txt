@@ -1,0 +1,7 @@
+faster-whisper
+ollama
+piper-tts
+pyaudio
+numpy
+sounddevice
+
