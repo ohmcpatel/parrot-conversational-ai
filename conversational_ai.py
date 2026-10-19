@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Fast Local Conversational AI Demo
-Uses: Faster-Whisper (STT) + Ollama (LLM) + Kokoro (TTS)
+Uses: Faster-Whisper (STT) + Ollama (LLM) + Piper (TTS)
 """
 
 import os
@@ -219,9 +219,14 @@ def speak_text(text):
     voice_model = os.path.join(os.path.dirname(__file__), "voices", "en_US-lessac-medium.onnx")
 
     # Run Piper TTS to generate speech
-    # Echo the text and pipe it to piper with the voice model
-    cmd = f'echo "{text}" | piper --model {voice_model} --output_file {temp_audio.name}'
-    result = subprocess.run(cmd, shell=True, check=False, capture_output=True)
+    # Pass generated text as stdin, without interpreting it as shell syntax
+    result = subprocess.run(
+        ["piper", "--model", voice_model, "--output_file", temp_audio.name],
+        input=text,
+        text=True,
+        check=False,
+        capture_output=True,
+    )
 
     # Check if the file was created and has content
     if os.path.exists(temp_audio.name) and os.path.getsize(temp_audio.name) > 0:
@@ -233,7 +238,7 @@ def speak_text(text):
         # If piper fails, just print the text
         print(f"⚠️  TTS failed, text response: {text}")
         if result.stderr:
-            print(f"   Error: {result.stderr.decode()}\n")
+            print(f"   Error: {result.stderr}\n")
 
     # Clean up
     try:
